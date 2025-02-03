@@ -8,10 +8,18 @@ import ray
 from ultralytics.data.augment import Albumentations, CenterCrop, RandomFlip, RandomHSV, RandomPerspective
 
 """
-eu modifiquei as transformações dentro da classe 'Albumentations' no '.../ultralytics/data/augment, 
+eu modifiquei as transformações dentro da classe 'Albumentations' no '.../ultralytics/data/augment.py, 
 foi necessário zerar a probabilidade usando um float 0.0 no transform 'T' e
 mudando o valor de 'p' em __init__ para 'p=0' 
 """
+"""
+eu modifiquei as tunes configs dentro da função '_tune' no '.../ultralytics/util/tuner.py, 
+foi necessário adicionar uma função de hash usando a lib hashlib nas configs 'tune.Tuner', 
+adicionei um parâmetro 'trial_dirname_creator' com uma função de hash name
+também na função 'run_ray_tune' adicionei um parâmetro 'gpu_per_trial: int = 1,'
+não me recordo se já era assim, mas acredito quen não
+"""
+
 albumentations_yolo = Albumentations(p=0.0)
 centercrop_yolo = CenterCrop(0)
 randomflip_yolo = RandomFlip(p=0.0)
@@ -41,20 +49,21 @@ logging.basicConfig(    # Configuração do log
     format="%(asctime)s - %(levelname)s - %(message)s",  # Formato da mensagem de log
 )
 
+ray.init(_temp_dir=r"D:\Judson_projetos\Yolo_trainer\YOLO_tools\ray_sessions")
+
 while True:
     
     try:
-        ray.init(_temp_dir=r"D:\Judson_projetos\Yolo_trainer\YOLO_tools\ray_sessions")
 
         model = YOLO(r"yolo11n.pt")
-        data_yaml = r'D:\Judson_projetos\Yolo_trainer\YOLO_tools\datasets\pelotas_YOLO\dataset.yaml'
+        data_yaml = r'D:\Judson_projetos\Yolo_trainer\YOLO_tools\datasets\emissoes_YOLO\dataset.yaml'
         results = model.tune(
                                 data=data_yaml,
                                 use_ray=True, 
                                 iterations=100,
                                 space=space,
                                 gpu_per_trial=1,
-                                project_name="YOLO11n-pelotas-no-yolo-aug",
+                                project_name="YOLO11n-emissoes-no-yolo-aug",
 
                                 )
 
@@ -65,4 +74,4 @@ while True:
         logging.error(f"Erro capturado: {e}")
         
         import time
-        time.sleep(5)
+        time.sleep(20)
