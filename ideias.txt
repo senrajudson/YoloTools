@@ -1,0 +1,14 @@
+IF aug == True and list_aug != []:
+  'check IF valid params in list'
+    ELSE 'error and valid list of params'
+  'result'
+ELSE:
+  'error missing list'
+
+
+C:/Users/AUTOU4/AppData/Local/Temp/ray/session_2025-03-06_10-00-36_104972_19520/artifacts/2025-03-06_10-00-41/_tune_2025-03-06_10-00-41/driver_artifacts`
+
+path=D:\Judson_projetos\Yolo_trainer\YOLO_tools\yolo-trainer-venv\Lib\site-packages\ray\dashboard\modules\metrics\export\prometheus\tmp\ray\
+
+path=C:/Users/AUTOU4/AppData/Local/Temp/ray/prom_metrics_service_discovery.json 
+err="open C:/Users/AUTOU4/AppData/Local/Temp/ray/prom_metrics_service_discovery.json: O arquivo já está sendo usado por outro processo."

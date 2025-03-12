@@ -1,0 +1,19 @@
+"""
+eu modifiquei as transformações dentro da classe 'Albumentations' no '.../ultralytics/data/augment, 
+foi necessário zerar a probabilidade usando um float 0.0 no transform 'T' e
+mudando o valor de 'p' em __init__ para 'p=0' 
+(para isso, eu usei 'cntrl+f(__init__)' e removi as augmentations que eu não queria)
+"""
+
+"""
+também modifiquei o tune.Config em '.../ultralytics/utils/tuner'
+adicionei um 'trial_dirname_creator' com uma função de 'shorten_name_creator' usando 
+a lib hashlib, pois os nomes que o raytune gera automaticamente são muito grandes para 
+salvar no dir do windows.
+"""
+
+"""
+também modifiquei a função on_fit_epoch_end em '.../ultralytics/utils/callbacks/raytune'
+eu fiz o import da função 'from ray.train._internal.session import get_session' e 
+substitui na condicional 'ray.train._internal.session.get_session()'
+"""

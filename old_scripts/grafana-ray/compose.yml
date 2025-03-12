@@ -1,0 +1,41 @@
+services:
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - monitoring_net
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: always
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks:
+      - monitoring_net
+
+  ray_dashboard:
+    image: rayproject/ray:latest
+    container_name: ray_dashboard
+    restart: always
+    command: ray start --head --dashboard-host=0.0.0.0 --dashboard-port=8265 --metrics-export-port=8266 --block
+    ports:
+      - "8265:8265"   # Acesso ao dashboard
+      - "8266:8266"   # Endpoint de métricas
+    networks:
+      - monitoring_net
+
+volumes:
+  grafana_data:
+
+networks:
+  monitoring_net:
