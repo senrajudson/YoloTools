@@ -14,6 +14,8 @@ from ultralytics.data.augment import (
 """_summary_
 o YOLO tem modelos específicos para cada tarefa. Nunca se esqueça de trocar os modelos, pois a 
 sua task precisa do modelo correto.
+
+Não se esqueça de modificar também a função de callback para retornar as métricas do seu modelo.
 """
 
 # Remova ou comente as importações relacionadas ao ray/tune se não forem necessárias.
@@ -32,11 +34,10 @@ logging.basicConfig(
 # Variáveis globais para rastrear a melhor métrica
 best_mAP50 = 0.0
 best_epoch = 0
-patience = 15
-limit = patience
+limit = patience = 15
 
 
-def on_train_epoch_end(trainer):
+def on_train_epoch_end_obj(trainer):
     global best_mAP50, best_epoch, limit, patience
 
     # Obter a métrica atual
@@ -65,11 +66,44 @@ def on_train_epoch_end(trainer):
     return current_mAP50
 
 
+best_acc = 0.0
+best_epoch = 0
+limit = patience = 15  # Early stopping patience
+
+
+def on_train_epoch_end_cls(trainer):
+    global best_acc, best_epoch, limit, patience
+
+    # Pegue a métrica de accuracy da classificação
+    current_acc = trainer.metrics.get("metrics/accuracy(B)", 0.0)
+    # ou experimente "metrics/acc(B)", depende do YOLO
+
+    if current_acc > best_acc:
+        best_acc = current_acc
+        best_epoch = trainer.epoch
+        logging.info(
+            f"Melhor accuracy atual: {round(best_acc, 4)} na época {best_epoch}"
+        )
+        limit = patience
+        model.save("best_metric.pt")
+
+    print(trainer.metrics)
+    print(f"Accuracy atual: {round(current_acc, 4)}")
+    print(f"Melhor accuracy até agora: {round(best_acc, 4)} na época {best_epoch}")
+
+    limit -= 1
+    if limit == 0:
+        logging.warning(f"Patience atingido na época {trainer.epoch}")
+        raise KeyboardInterrupt
+
+    return current_acc
+
+
 def training(config):
 
     # Remove callbacks anteriores e adiciona o callback customizado
     model.reset_callbacks()
-    model.add_callback("on_train_epoch_end", on_train_epoch_end)
+    model.add_callback("on_train_epoch_end", on_train_epoch_end_cls)
 
     # Executa o treinamento
     model.train(
