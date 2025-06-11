@@ -33,6 +33,7 @@ logging.basicConfig(
 
 # Variáveis globais para rastrear a melhor métrica
 best_mAP50 = 0.0
+best_mAP5095 = 0.0
 best_epoch = 0
 limit = patience = 15
 
@@ -45,7 +46,7 @@ def on_train_epoch_end_obj(trainer):
     current_mAP5095 = trainer.metrics.get("metrics/mAP50-95(B)", 0.0)
 
     # Atualiza a melhor métrica se a atual for melhor
-    if current_mAP50 > best_mAP50:
+    if current_mAP50 >= best_mAP50 and current_mAP5095 > best_mAP5095:
         best_mAP50 = current_mAP50
         best_epoch = trainer.epoch
         logging.info(
@@ -67,18 +68,22 @@ def on_train_epoch_end_obj(trainer):
 
 
 best_acc = 0.0
+best_loss = 0.0
 best_epoch = 0
 limit = patience = 15  # Early stopping patience
 
+
+# # # amarrar melhor isso aqui, fazer um check de outra métrica também para escolher a melhor época
 
 def on_train_epoch_end_cls(trainer):
     global best_acc, best_epoch, limit, patience
 
     # Pegue a métrica de accuracy da classificação
-    current_acc = trainer.metrics.get("metrics/accuracy(B)", 0.0)
+    current_acc = trainer.metrics.get("metrics/accuracy_top1", 0.0)
+    current_loss = trainer.metrics.get("val/loss", 0.0)
     # ou experimente "metrics/acc(B)", depende do YOLO
 
-    if current_acc > best_acc:
+    if current_acc >= best_acc and current_loss < best_loss:
         best_acc = current_acc
         best_epoch = trainer.epoch
         logging.info(
@@ -88,7 +93,7 @@ def on_train_epoch_end_cls(trainer):
         model.save("best_metric.pt")
 
     print(trainer.metrics)
-    print(f"Accuracy atual: {round(current_acc, 4)}")
+    print(f"Accuracy atual: {round(current_acc, 4)} | Menor loss: {round(current_loss, 4)}")
     print(f"Melhor accuracy até agora: {round(best_acc, 4)} na época {best_epoch}")
 
     limit -= 1
@@ -125,9 +130,10 @@ def training(config):
 
 
 def objective(trial):
-    global best_mAP50, best_epoch, limit, patience
+    global best_mAP50, best_epoch, limit, patience, best_acc
 
     # Reinicia os indicadores a cada novo trial
+    best_acc = 0.0
     best_mAP50 = 0.0
     best_epoch = 0
     limit = patience
@@ -153,7 +159,7 @@ def objective(trial):
 
     # O Optuna espera que a função objetivo retorne a métrica a ser otimizada.
     # Aqui, assumimos que queremos maximizar o mAP50.
-    return best_mAP50
+    return best_acc
 
 
 if __name__ == "__main__":
