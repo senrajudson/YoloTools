@@ -1,4 +1,6 @@
-from ultralytics.utils.tuner import run_ray_tune  # ou o nome correto da função de treino interna
+from ultralytics.utils.tuner import (
+    run_ray_tune,
+)  # ou o nome correto da função de treino interna
 from ray import tune
 
 experiment_path = r"D:\Judson_projetos\Yolo_trainer\YOLO_tools\ray_sessions\session_2025-01-23_11-32-44_550677_25496"

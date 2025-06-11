@@ -5,6 +5,7 @@ import time
 import cv2
 import os
 
+
 class ConcatFramesNumpy:
     def __init__(self):
         self._file_path = None
@@ -16,13 +17,13 @@ class ConcatFramesNumpy:
         # if os.path.isdir(self._read_frames):
         if isinstance(self._read_frames, str):
             files = os.listdir(self._read_frames)
-            files = (sorted(files))
+            files = sorted(files)
 
             frames_list = []
             for file in files:
                 img = cv2.imread(os.path.join(self._read_frames, file))
                 frames_list.append(img)
-        
+
         else:
             raise ValueError("Values does not match.")
 
@@ -35,7 +36,7 @@ class ConcatFramesNumpy:
     @property
     def output_folder(self):
         return self._output_folder
-    
+
     @output_folder.setter
     def output_folder(self, path):
         self._output_folder = path
@@ -48,25 +49,29 @@ class ConcatFramesNumpy:
             image2 = frames[i + 1]
             concatenated_image = np.concatenate((image1, image2), axis=0)
             concat_frames.append(concatenated_image)
-        
+
         return concat_frames
 
     def save(self, file, video_name="video", data=False):
         if data == True:
-            data_formatada = datetime.fromtimestamp(time.time()).strftime('%Y-%d-%m_%H.%M.%S')
-            nome_dir = data_formatada+"_"+self.output_folder
+            data_formatada = datetime.fromtimestamp(time.time()).strftime(
+                "%Y-%d-%m_%H.%M.%S"
+            )
+            nome_dir = data_formatada + "_" + self.output_folder
             if isinstance(file, list):
                 if self.output_folder is None:
                     raise ValueError("Output folder path is not set.")
                 os.makedirs(f"{nome_dir}", exist_ok=True)
 
                 for i, frame in enumerate(file):
-                    frame_filename = os.path.join(f"../../{nome_dir}", f'frame_{i:04d}.jpg')
+                    frame_filename = os.path.join(
+                        f"../../{nome_dir}", f"frame_{i:04d}.jpg"
+                    )
                     cv2.imwrite(frame_filename, frame)
 
             if isinstance(file, ImageSequenceClip):
                 os.makedirs(f"../../{self.output_folder}", exist_ok=True)
-                file.write_videofile(f'../../{self.output_folder}/{video_name}.mp4')
+                file.write_videofile(f"../../{self.output_folder}/{video_name}.mp4")
         else:
             if isinstance(file, list):
                 if self.output_folder is None:
@@ -74,25 +79,26 @@ class ConcatFramesNumpy:
                 os.makedirs(f"{self.output_folder}", exist_ok=True)
 
                 for i, frame in enumerate(file):
-                    frame_filename = os.path.join(f"../../{self.output_folder}", f'frame_{i:04d}.jpg')
+                    frame_filename = os.path.join(
+                        f"../../{self.output_folder}", f"frame_{i:04d}.jpg"
+                    )
                     cv2.imwrite(frame_filename, frame)
 
             if isinstance(file, ImageSequenceClip):
                 os.makedirs(f"../../{self.output_folder}", exist_ok=True)
-                file.write_videofile(f'../../{self.output_folder}/{video_name}.mp4')
-
+                file.write_videofile(f"../../{self.output_folder}/{video_name}.mp4")
 
     def convert_vid(self, frames, fps=30):
         clip = ImageSequenceClip(frames, fps=fps)
 
         return clip
-    
+
     def matrix_color(self, frames, type):
-        if type=="BGR>RGB":
+        if type == "BGR>RGB":
             change_matrix = cv2.COLOR_BGR2RGB
-        elif type=="BGR>GRAY":
+        elif type == "BGR>GRAY":
             change_matrix = cv2.COLOR_BGR2GRAY
-        elif type=="RGB>GRAY":
+        elif type == "RGB>GRAY":
             change_matrix = cv2.COLOR_RGB2GRAY
 
         new_frame_list = []
@@ -101,4 +107,3 @@ class ConcatFramesNumpy:
             new_frame_list.append(new_frame_color)
 
         return new_frame_list
-        

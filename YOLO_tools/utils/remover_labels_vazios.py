@@ -1,47 +1,96 @@
-
-import shutil
-import os
-
 def processar_dataset(dataset_dir):
-    pasta_labels = os.path.join(dataset_dir, 'labels')
-    pasta_imagens = os.path.join(dataset_dir, 'images')
-    pasta_labels_sem_nada = os.path.join(pasta_labels, 'sem_nada_lb')
-    pasta_imagens_sem_nada = os.path.join(pasta_imagens, 'sem_nada_im')
+    import shutil
+    import os
+    import numpy as np
 
-    # Verificar se as pastas labels e imagens existem
-    if not os.path.exists(pasta_labels):
-        print(f"Erro: O diretório '{pasta_labels}' não existe.")
-        return
+    base_labels_dir = os.path.join(dataset_dir, "labels")
+    base_images_dir = os.path.join(dataset_dir, "images")
+    sem_nada_labels_dir = os.path.join(base_labels_dir, "sem_nada_lb")
+    sem_nada_images_dir = os.path.join(base_images_dir, "sem_nada_im")
+    os.makedirs(sem_nada_labels_dir, exist_ok=True)
+    os.makedirs(sem_nada_images_dir, exist_ok=True)
 
-    if not os.path.exists(pasta_imagens):
-        print(f"Erro: O diretório '{pasta_imagens}' não existe.")
-        return
+    for root, dirs, files in os.walk(base_labels_dir):
+        if "sem_nada_lb" in dirs:
+            dirs.remove("sem_nada_lb")
+        for filename in files:
+            if not filename.lower().endswith(".txt"):
+                continue
+            label_path = os.path.join(root, filename)
+            rel_dir = os.path.relpath(root, base_labels_dir)
+            if rel_dir == ".":
+                rel_dir = ""
+            image_dir = os.path.join(base_images_dir, rel_dir)
+            base_name = os.path.splitext(filename)[0]
+            image_path = None
+            for ext in [".jpg", ".jpeg", ".png", ".JPG", ".JPEG", ".PNG"]:
+                candidate = os.path.join(image_dir, base_name + ext)
+                if os.path.exists(candidate):
+                    image_path = candidate
+                    break
 
-    # Criar a pasta sem_nada dentro de labels
-    os.makedirs(pasta_labels_sem_nada, exist_ok=True)
+            try:
+                if os.path.getsize(label_path) == 0:
+                    shutil.move(label_path, os.path.join(sem_nada_labels_dir, filename))
+                    if image_path:
+                        shutil.move(
+                            image_path,
+                            os.path.join(
+                                sem_nada_images_dir, os.path.basename(image_path)
+                            ),
+                        )
+                    continue
+            except Exception:
+                shutil.move(label_path, os.path.join(sem_nada_labels_dir, filename))
+                if image_path:
+                    shutil.move(
+                        image_path,
+                        os.path.join(sem_nada_images_dir, os.path.basename(image_path)),
+                    )
+                continue
 
-    # Mover arquivos .txt vazios para labels/sem_nada
-    for arquivo in os.listdir(pasta_labels):
-        caminho_arquivo = os.path.join(pasta_labels, arquivo)
-        if os.path.isfile(caminho_arquivo) and os.path.getsize(caminho_arquivo) == 0:
-            shutil.move(caminho_arquivo, os.path.join(pasta_labels_sem_nada, arquivo))
+            invalid = False
+            corrected_lines = []
+            try:
+                with open(label_path, "r") as f:
+                    lines = [ln for ln in f.read().splitlines() if ln.strip()]
+            except Exception:
+                invalid = True
 
-    # Criar a pasta sem_nada dentro de imagens
-    os.makedirs(pasta_imagens_sem_nada, exist_ok=True)
+            if not invalid and len(lines) == 0:
+                invalid = True
 
-    extensoes = ['png', 'jpg', 'jpeg']
+            if not invalid:
+                for line in lines:
+                    parts = line.split()
+                    if len(parts) != 5:
+                        invalid = True
+                        break
+                    try:
+                        class_id = int(parts[0])
+                        bbox = np.array([float(x) for x in parts[1:5]])
+                        bbox = np.clip(bbox, 0.0, 1.0)
+                        corrected_line = (
+                            f"{class_id} {' '.join(f'{x:.6f}' for x in bbox)}"
+                        )
+                        corrected_lines.append(corrected_line)
+                    except:
+                        invalid = True
+                        break
 
-    # Mover imagens correspondentes para imagens/sem_nada
-    for arquivo_txt in os.listdir(pasta_labels_sem_nada):
-        if arquivo_txt.endswith('.txt'):
-            nome_base = os.path.splitext(arquivo_txt)[0]
-            print(nome_base)
-            for ext in extensoes:
-                imagem_correspondente = os.path.join(pasta_imagens, f"{nome_base}.{ext}")
-                if os.path.exists(imagem_correspondente):
-                    destino = os.path.join(pasta_imagens_sem_nada, f"{nome_base}.{ext}")
-                    shutil.move(imagem_correspondente, destino)
-                    break  # Interrompe o loop se a imagem for encontrada e movida
+            if invalid:
+                shutil.move(label_path, os.path.join(sem_nada_labels_dir, filename))
+                if image_path:
+                    shutil.move(
+                        image_path,
+                        os.path.join(sem_nada_images_dir, os.path.basename(image_path)),
+                    )
+            else:
+                with open(label_path, "w") as f:
+                    for cline in corrected_lines:
+                        f.write(cline + "\n")
 
+
+# Exemplo de uso:
 # dataset_dir = 'YOLO_tools/emissoes_dataset_YOLO'
 # processar_dataset(dataset_dir)

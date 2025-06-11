@@ -17,3 +17,7 @@ também modifiquei a função on_fit_epoch_end em '.../ultralytics/utils/callbac
 eu fiz o import da função 'from ray.train._internal.session import get_session' e 
 substitui na condicional 'ray.train._internal.session.get_session()'
 """
+
+"""
+
+"""

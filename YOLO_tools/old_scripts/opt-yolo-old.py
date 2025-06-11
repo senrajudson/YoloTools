@@ -2,10 +2,16 @@ from ultralytics import YOLO
 from ray import tune
 import ray
 
-#pip install -U ultralytics "ray[tune]"
+# pip install -U ultralytics "ray[tune]"
 
 ### this are a mix of all YOLO built-in augments, if ur implementing manual augments, it's ideal to disable YOLO augments to avoid overlay
-from ultralytics.data.augment import Albumentations, CenterCrop, RandomFlip, RandomHSV, RandomPerspective
+from ultralytics.data.augment import (
+    Albumentations,
+    CenterCrop,
+    RandomFlip,
+    RandomHSV,
+    RandomPerspective,
+)
 
 """
 eu modifiquei as transformações dentro da classe 'Albumentations' no '.../ultralytics/data/augment.py, 
@@ -26,7 +32,7 @@ randomflip_yolo = RandomFlip(p=0.0)
 randomhsv_yolo = RandomHSV(hgain=0.0, sgain=0.0, vgain=0.0)
 randomperspective_yolo = RandomPerspective(translate=0.0, scale=0.0)
 
-space={     # Configurar o espaço de busca
+space = {  # Configurar o espaço de busca
     "lr0": tune.uniform(1e-5, 1e-1),
     "lrf": tune.uniform(1e-5, 1e-2),
     "weight_decay": tune.uniform(1e-3, 1e-2),
@@ -36,14 +42,14 @@ space={     # Configurar o espaço de busca
     "warmup_bias_lr": tune.uniform(1e-5, 1e-1),
     # "epochs": tune.randint(50, 200),
     "epochs": 70,
-    "optimizer": tune.choice(['AdamW', "SGD"]),
+    "optimizer": tune.choice(["AdamW", "SGD"]),
     "imgsz": tune.choice([360, 480, 640]),
     "batch": tune.randint(8, 48),
-    }
+}
 
 import logging
 
-logging.basicConfig(    # Configuração do log
+logging.basicConfig(  # Configuração do log
     filename="app_errors.log",  # Nome do arquivo de log
     level=logging.ERROR,  # Nível de log configurado para capturar erros
     format="%(asctime)s - %(levelname)s - %(message)s",  # Formato da mensagem de log
@@ -52,26 +58,26 @@ logging.basicConfig(    # Configuração do log
 ray.init(_temp_dir=r"D:\Judson_projetos\Yolo_trainer\YOLO_tools\ray_sessions")
 
 while True:
-    
+
     try:
 
         model = YOLO(r"yolo11n.pt")
-        data_yaml = r'D:\Judson_projetos\Yolo_trainer\YOLO_tools\datasets\emissoes_YOLO\dataset.yaml'
+        data_yaml = r"D:\Judson_projetos\Yolo_trainer\YOLO_tools\datasets\emissoes_YOLO\dataset.yaml"
         results = model.tune(
-                                data=data_yaml,
-                                use_ray=True, 
-                                iterations=100,
-                                space=space,
-                                gpu_per_trial=1,
-                                project_name="YL11n-emissoes-yl-aug",
-
-                                )
+            data=data_yaml,
+            use_ray=True,
+            iterations=100,
+            space=space,
+            gpu_per_trial=1,
+            project_name="YL11n-emissoes-yl-aug",
+        )
 
         print(results)
 
     except Exception as e:
-        
+
         logging.error(f"Erro capturado: {e}")
-        
+
         import time
+
         time.sleep(10)

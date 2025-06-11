@@ -1,4 +1,3 @@
-import logging
 from ultralytics import YOLO
 from ray import tune
 import ray
@@ -10,7 +9,7 @@ ray.init(
 )
 
 # Inicializa o modelo e o dataset
-model = YOLO(r"yolo11n.pt")
+model = YOLO(r"D:\Judson_projetos\Yolo_trainer\YOLO_tools\training\yolo11n.pt")
 data_yaml = (
     r"D:\Judson_projetos\Yolo_trainer\YOLO_tools\datasets\emissoes_YOLO\dataset.yaml"
 )
@@ -24,9 +23,10 @@ space = {
     "warmup_epochs": tune.randint(1, 5),
     "warmup_momentum": tune.uniform(0.4, 0.8),
     "warmup_bias_lr": tune.uniform(1e-5, 1e-1),
-    "epochs": 70,
+    "epochs": 100,
     "optimizer": tune.choice(["AdamW", "SGD"]),
-    "imgsz": tune.choice([360, 480, 640]),
+    # "imgsz": tune.choice([360, 480, 640]),
+    "imgsz": tune.choice([360, 480]),
     "batch": tune.randint(8, 48),
 }
 
@@ -36,6 +36,18 @@ results = model.tune(
     use_ray=True,
     iterations=100,
     space=space,
-    gpu_per_trial=1,
-    project_name="YOLO11n-emissoes-raydash",
+    cache="ram",
+    workers=4,
+    # train_args={
+    #   'cache' : 'ram',
+    #   'workers' : 2,
+    #   }
+    # gpu_per_trial=1,
+    # num_threads = 2,
+    # max_samples = 2,
 )
+
+"""
+.\prometheus-3.2.1.windows-amd64\prometheus.exe --config.file=D:\Judson_projetos\Yolo_trainer\YOLO_tools\ray_sessions\session_2025-03-19_16-47-39_139098_18500\metrics\prometheus\prometheus.yml
+
+"""

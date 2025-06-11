@@ -1,12 +1,25 @@
 import optuna
-import os
-import json
 import logging
 from ultralytics import YOLO
+from ultralytics.data.augment import (
+    Mosaic,
+    MixUp,
+    Albumentations,
+    LetterBox,
+    CopyPaste,
+    RandomPerspective,
+    Compose,
+)
+
+"""_summary_
+o YOLO tem modelos específicos para cada tarefa. Nunca se esqueça de trocar os modelos, pois a 
+sua task precisa do modelo correto.
+"""
+
 # Remova ou comente as importações relacionadas ao ray/tune se não forem necessárias.
 
 # Inicialize o modelo
-model = YOLO(r"D:\Judson_projetos\Yolo_trainer\YOLO_tools\training\yolo11n.pt")
+model = YOLO(r"yolo11n-cls.pt")
 
 # Configuração do logger
 logging.basicConfig(
@@ -19,23 +32,26 @@ logging.basicConfig(
 # Variáveis globais para rastrear a melhor métrica
 best_mAP50 = 0.0
 best_epoch = 0
-patience = 100
+patience = 15
 limit = patience
+
 
 def on_train_epoch_end(trainer):
     global best_mAP50, best_epoch, limit, patience
 
     # Obter a métrica atual
-    current_mAP50 = trainer.metrics.get('metrics/mAP50(B)', 0.0)
-    current_mAP5095 = trainer.metrics.get('metrics/mAP50-95(B)', 0.0)
+    current_mAP50 = trainer.metrics.get("metrics/mAP50(B)", 0.0)
+    current_mAP5095 = trainer.metrics.get("metrics/mAP50-95(B)", 0.0)
 
     # Atualiza a melhor métrica se a atual for melhor
     if current_mAP50 > best_mAP50:
         best_mAP50 = current_mAP50
         best_epoch = trainer.epoch
-        logging.info(f"Melhor mAP50 atual: {round(best_mAP50, 4)} na época {best_epoch}")
+        logging.info(
+            f"Melhor mAP50 atual: {round(best_mAP50, 4)} na época {best_epoch}"
+        )
         limit = patience  # Reinicia a paciência
-        model.save('best_metric.pt')
+        model.save("best_metric.pt")
 
     print(trainer.metrics)
     print(f"mAP50 atual: {round(current_mAP50, 4)}")
@@ -48,29 +64,31 @@ def on_train_epoch_end(trainer):
 
     return current_mAP50
 
+
 def training(config):
 
     # Remove callbacks anteriores e adiciona o callback customizado
     model.reset_callbacks()
-    model.add_callback('on_train_epoch_end', on_train_epoch_end)
+    model.add_callback("on_train_epoch_end", on_train_epoch_end)
 
     # Executa o treinamento
     model.train(
-        data=r"D:\Judson_projetos\Yolo_trainer\YOLO_tools\datasets\emissoes_YOLO\dataset.yaml",
+        data=r"D:\Judson_projetos\Yolo_trainer\YOLO_tools\datasets\efluentes_YOLO_0206",
         device="cuda",
-        batch=config['batch'],
+        batch=config["batch"],
         epochs=300,  # ou ajuste conforme necessário
-        imgsz=config['imgsz'],
-        lr0=config['lr0'],
-        lrf=config['lrf'],
-        momentum=config['momentum'],
-        optimizer=config['optimizer'],
-        warmup_bias_lr=config['warmup_bias_lr'],
-        warmup_epochs=config['warmup_epochs'],
-        warmup_momentum=config['warmup_momentum'],
-        weight_decay=config['weight_decay'],
+        imgsz=config["imgsz"],
+        lr0=config["lr0"],
+        lrf=config["lrf"],
+        momentum=config["momentum"],
+        optimizer=config["optimizer"],
+        warmup_bias_lr=config["warmup_bias_lr"],
+        warmup_epochs=config["warmup_epochs"],
+        warmup_momentum=config["warmup_momentum"],
+        weight_decay=config["weight_decay"],
     )
-    print('Treinamento finalizado para esta configuração.')
+    print("Treinamento finalizado para esta configuração.")
+
 
 def objective(trial):
     global best_mAP50, best_epoch, limit, patience
@@ -89,7 +107,7 @@ def objective(trial):
         "warmup_epochs": trial.suggest_int("warmup_epochs", 1, 5),
         "warmup_momentum": trial.suggest_float("warmup_momentum", 0.4, 0.8),
         "warmup_bias_lr": trial.suggest_float("warmup_bias_lr", 1e-5, 1e-1, log=True),
-        "optimizer": trial.suggest_categorical("optimizer", ['AdamW', "SGD"]),
+        "optimizer": trial.suggest_categorical("optimizer", ["AdamW", "SGD"]),
         "imgsz": trial.suggest_categorical("imgsz", [360, 480, 640]),
         "batch": trial.suggest_int("batch", 8, 48),
     }
@@ -103,15 +121,18 @@ def objective(trial):
     # Aqui, assumimos que queremos maximizar o mAP50.
     return best_mAP50
 
+
 if __name__ == "__main__":
     # Cria o estudo especificando que a métrica deve ser maximizada
     study = optuna.create_study(
-        direction='maximize',
-        storage='sqlite:///yolo11-opt.db',
-        study_name='yolo11-opt',
-        load_if_exists=True
+        direction="maximize",
+        storage="sqlite:///yolo11-opt.db",
+        study_name="yolo11-opt-efluentes-10-06",
+        load_if_exists=True,
     )
     # Número de trials pode ser ajustado conforme sua necessidade
     study.optimize(objective, n_trials=100)
     print("Melhor valor de mAP50:", study.best_value)
     print("Melhores hiperparâmetros:", study.best_params)
+
+# # # optuna-dashboard sqlite:///yolo11-opt.db --server=wsgiref --port=8070

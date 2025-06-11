@@ -23,6 +23,6 @@ while True:
                 print(f"Arquivo '{filename}' copiado para {dest_dir}")
     except Exception as e:
         print("Erro durante a cópia dos arquivos:", e)
-    
+
     # Aguarda 10 segundos antes de repetir
     time.sleep(10)

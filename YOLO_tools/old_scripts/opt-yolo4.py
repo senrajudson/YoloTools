@@ -4,11 +4,16 @@ from ray import tune
 import ray
 
 # Inicialize o Ray com o dashboard habilitado
-ray.init(include_dashboard=True, _temp_dir=r"D:\Judson_projetos\Yolo_trainer\YOLO_tools\ray_sessions")
+ray.init(
+    include_dashboard=True,
+    _temp_dir=r"D:\Judson_projetos\Yolo_trainer\YOLO_tools\ray_sessions",
+)
 
 # Inicializa o modelo e o dataset
 model = YOLO(r"yolo11n.pt")
-data_yaml = r'D:\Judson_projetos\Yolo_trainer\YOLO_tools\datasets\emissoes_YOLO\dataset.yaml'
+data_yaml = (
+    r"D:\Judson_projetos\Yolo_trainer\YOLO_tools\datasets\emissoes_YOLO\dataset.yaml"
+)
 
 # Defina o espaço de busca (hyperparâmetros) para o Tune
 space = {
@@ -20,7 +25,7 @@ space = {
     "warmup_momentum": tune.uniform(0.4, 0.8),
     "warmup_bias_lr": tune.uniform(1e-5, 1e-1),
     "epochs": 70,
-    "optimizer": tune.choice(['AdamW', "SGD"]),
+    "optimizer": tune.choice(["AdamW", "SGD"]),
     "imgsz": tune.choice([360, 480, 640]),
     "batch": tune.randint(8, 48),
 }
@@ -28,10 +33,9 @@ space = {
 # Execute o treinamento (tune integrado ao YOLO)
 results = model.tune(
     data=data_yaml,
-    use_ray=True, 
+    use_ray=True,
     iterations=100,
     space=space,
     gpu_per_trial=1,
     project_name="YOLO11n-emissoes-raydash",
 )
-

@@ -1,5 +1,5 @@
 """
-Vou salvar essa função de tune para caso o yolo sofra atualizações no futuro, se acontecer de a função 'tune' mudar (e deve acontecer, pois atualmente tem alguns bugs) 
+Vou salvar essa função de tune para caso o yolo sofra atualizações no futuro, se acontecer de a função 'tune' mudar (e deve acontecer, pois atualmente tem alguns bugs)
 é só copiar essa aqui e substituir, deve funcionar (eu acho)
 """
 
@@ -45,6 +45,12 @@ def tune(
         from .tuner import Tuner
 
         custom = {}  # method defaults
-        args = {**self.overrides, **custom, **kwargs, "mode": "train"}  # highest priority args on the right
-        return Tuner(args=args, _callbacks=self.callbacks)(model=self, iterations=iterations)
-            
+        args = {
+            **self.overrides,
+            **custom,
+            **kwargs,
+            "mode": "train",
+        }  # highest priority args on the right
+        return Tuner(args=args, _callbacks=self.callbacks)(
+            model=self, iterations=iterations
+        )

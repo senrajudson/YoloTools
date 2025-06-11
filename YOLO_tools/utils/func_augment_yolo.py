@@ -120,13 +120,25 @@ class Albumentations:
             ]
 
             # Compose transforms
-            self.contains_spatial = any(transform.__class__.__name__ in spatial_transforms for transform in T)
+            self.contains_spatial = any(
+                transform.__class__.__name__ in spatial_transforms for transform in T
+            )
             self.transform = (
-                A.Compose(T, bbox_params=A.BboxParams(format="yolo", label_fields=["class_labels"]))
+                A.Compose(
+                    T,
+                    bbox_params=A.BboxParams(
+                        format="yolo", label_fields=["class_labels"]
+                    ),
+                )
                 if self.contains_spatial
                 else A.Compose(T)
             )
-            LOGGER.info(prefix + ", ".join(f"{x}".replace("always_apply=False, ", "") for x in T if x.p))
+            LOGGER.info(
+                prefix
+                + ", ".join(
+                    f"{x}".replace("always_apply=False, ", "") for x in T if x.p
+                )
+            )
         except ImportError:  # package not installed, skip
             pass
         except Exception as e:
@@ -174,7 +186,9 @@ class Albumentations:
                 labels["instances"].normalize(*im.shape[:2][::-1])
                 bboxes = labels["instances"].bboxes
                 # TODO: add supports of segments and keypoints
-                new = self.transform(image=im, bboxes=bboxes, class_labels=cls)  # transformed
+                new = self.transform(
+                    image=im, bboxes=bboxes, class_labels=cls
+                )  # transformed
                 if len(new["class_labels"]) > 0:  # skip update if no bbox in new im
                     labels["img"] = new["image"]
                     labels["cls"] = np.array(new["class_labels"])
@@ -184,4 +198,3 @@ class Albumentations:
             labels["img"] = self.transform(image=labels["img"])["image"]  # transformed
 
         return labels
-

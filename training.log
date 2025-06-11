@@ -1,0 +1,65 @@
+2025-04-28 13:39:58,829 - INFO - 
+Best actual metric : 0.0007 on epoch 1
+2025-04-28 13:40:02,164 - INFO - 
+Best actual metric : 0.0008 on epoch 4
+2025-04-28 13:40:03,252 - INFO - 
+Best actual metric : 0.0012 on epoch 5
+2025-04-28 13:40:04,437 - INFO - 
+Best actual metric : 0.0012 on epoch 6
+2025-04-28 13:40:09,769 - INFO - 
+Best actual metric : 0.0013 on epoch 11
+2025-04-28 13:40:12,058 - INFO - 
+Best actual metric : 0.0013 on epoch 13
+2025-04-28 13:40:13,223 - INFO - 
+Best actual metric : 0.0017 on epoch 14
+2025-04-28 13:40:14,448 - INFO - 
+Best actual metric : 0.0019 on epoch 15
+2025-04-28 13:40:15,582 - INFO - 
+Best actual metric : 0.0022 on epoch 16
+2025-04-28 13:40:16,716 - INFO - 
+Best actual metric : 0.0028 on epoch 17
+2025-04-28 13:40:17,960 - INFO - 
+Best actual metric : 0.0029 on epoch 18
+2025-04-28 13:40:19,093 - INFO - 
+Best actual metric : 0.0034 on epoch 19
+2025-04-28 13:40:20,256 - INFO - 
+Best actual metric : 0.0035 on epoch 20
+2025-04-28 13:40:21,511 - INFO - 
+Best actual metric : 0.005 on epoch 21
+2025-04-28 13:40:22,695 - INFO - 
+Best actual metric : 0.0068 on epoch 22
+2025-04-28 13:40:23,904 - INFO - 
+Best actual metric : 0.0112 on epoch 23
+2025-04-28 13:40:25,130 - INFO - 
+Best actual metric : 0.0584 on epoch 24
+2025-04-28 13:40:26,343 - INFO - 
+Best actual metric : 0.1131 on epoch 25
+2025-04-28 13:40:28,274 - INFO - 
+Best actual metric : 0.1779 on epoch 27
+2025-04-28 13:40:29,285 - INFO - 
+Best actual metric : 0.243 on epoch 28
+2025-04-28 13:40:31,644 - INFO - 
+Best actual metric : 0.5119 on epoch 30
+2025-04-28 13:40:32,986 - INFO - 
+Best actual metric : 0.6218 on epoch 31
+2025-04-28 13:40:34,108 - INFO - 
+Best actual metric : 0.6986 on epoch 32
+2025-04-28 13:40:36,219 - INFO - 
+Best actual metric : 0.7012 on epoch 34
+2025-04-28 13:40:37,291 - INFO - 
+Best actual metric : 0.8101 on epoch 35
+2025-04-28 13:40:51,345 - INFO - 
+Best actual metric : 0.8375 on epoch 49
+2025-04-28 13:40:56,518 - INFO - 
+Best actual metric : 0.9013 on epoch 54
+2025-04-28 13:41:39,034 - INFO - 
+Best actual metric : 0.9105 on epoch 96
+2025-04-28 13:42:20,521 - INFO - 
+Best actual metric : 0.9202 on epoch 135
+2025-04-28 13:42:24,102 - INFO - 
+Best actual metric : 0.9215 on epoch 138
+2025-04-28 13:42:28,406 - INFO - 
+Best actual metric : 0.9253 on epoch 142
+2025-04-28 13:42:31,846 - INFO - 
+Best actual metric : 0.9396 on epoch 145
+2025-04-28 13:44:18,984 - WARNING - Patience has reached limit at epoch 244

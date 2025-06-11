@@ -1,4 +1,4 @@
-if __name__ == '__main__':
+if __name__ == "__main__":
     from YOLO_tools.old_scripts.yolo_tools import YoloTrainer, YoloTuner
     from ray import tune
 
@@ -13,7 +13,7 @@ if __name__ == '__main__':
         model_path=model_path,
         dataset_yaml=dataset_yaml,
     )
-    
+
     # trainer.train()
 
     # Espaço de busca dos hiperparâmetros
@@ -25,7 +25,7 @@ if __name__ == '__main__':
         "warmup_epochs": tune.randint(1, 5),
         "warmup_momentum": tune.uniform(0.4, 0.8),
         "warmup_bias_lr": tune.uniform(1e-5, 1e-1),
-        "optimizer": tune.choice(['AdamW', "SGD"]),
+        "optimizer": tune.choice(["AdamW", "SGD"]),
         "imgsz": tune.choice([360, 480, 640]),
         "batch": tune.choice([8, 16, 32, 48, 64]),
         # 'epochs': 100,
@@ -38,7 +38,7 @@ if __name__ == '__main__':
         dataset_yaml=dataset_yaml,
         storage_path=storage_path,
         hyper_space=hyper_space,
-        include_dashboard=True
+        include_dashboard=True,
     )
 
     tuner_instance.run()

@@ -6,6 +6,7 @@ from ultralytics.cfg import TASK2DATA, TASK2METRIC, get_save_dir
 from ultralytics.utils import DEFAULT_CFG, DEFAULT_CFG_DICT, LOGGER, NUM_THREADS, checks
 import hashlib
 
+
 def run_ray_tune(
     model,
     space: dict = None,
@@ -40,7 +41,9 @@ def run_ray_tune(
         result_grid = model.tune(data="coco8.yaml", use_ray=True)
         ```
     """
-    LOGGER.info("💡 Learn about RayTune at https://docs.ultralytics.com/integrations/ray-tune")
+    LOGGER.info(
+        "💡 Learn about RayTune at https://docs.ultralytics.com/integrations/ray-tune"
+    )
     if train_args is None:
         train_args = {}
 
@@ -53,7 +56,9 @@ def run_ray_tune(
         from ray.air.integrations.wandb import WandbLoggerCallback
         from ray.tune.schedulers import ASHAScheduler
     except ImportError:
-        raise ModuleNotFoundError('Ray Tune required but not found. To install run: pip install "ray[tune]"')
+        raise ModuleNotFoundError(
+            'Ray Tune required but not found. To install run: pip install "ray[tune]"'
+        )
 
     try:
         import wandb
@@ -80,7 +85,9 @@ def run_ray_tune(
         "translate": tune.uniform(0.0, 0.9),  # image translation (+/- fraction)
         "scale": tune.uniform(0.0, 0.9),  # image scale (+/- gain)
         "shear": tune.uniform(0.0, 10.0),  # image shear (+/- deg)
-        "perspective": tune.uniform(0.0, 0.001),  # image perspective (+/- fraction), range 0-0.001
+        "perspective": tune.uniform(
+            0.0, 0.001
+        ),  # image perspective (+/- fraction), range 0-0.001
         "flipud": tune.uniform(0.0, 1.0),  # image flip up-down (probability)
         "fliplr": tune.uniform(0.0, 1.0),  # image flip left-right (probability)
         "bgr": tune.uniform(0.0, 1.0),  # image channel BGR (probability)
@@ -103,7 +110,9 @@ def run_ray_tune(
         Returns:
             None
         """
-        model_to_train = ray.get(model_in_store)  # get the model from ray store for tuning
+        model_to_train = ray.get(
+            model_in_store
+        )  # get the model from ray store for tuning
         model_to_train.reset_callbacks()
         config.update(train_args)
         results = model_to_train.train(**config)
@@ -112,7 +121,9 @@ def run_ray_tune(
     # Get search space
     if not space:
         space = default_space
-        LOGGER.warning("WARNING ⚠️ search space not provided, using default search space.")
+        LOGGER.warning(
+            "WARNING ⚠️ search space not provided, using default search space."
+        )
 
     # Get dataset
     data = train_args.get("data", TASK2DATA[task])
@@ -121,7 +132,9 @@ def run_ray_tune(
         LOGGER.warning(f'WARNING ⚠️ data not provided, using default "data={data}".')
 
     # Define the trainable function with allocated resources
-    trainable_with_resources = tune.with_resources(_tune, {"cpu": NUM_THREADS, "gpu": gpu_per_trial or 0})
+    trainable_with_resources = tune.with_resources(
+        _tune, {"cpu": NUM_THREADS, "gpu": gpu_per_trial or 0}
+    )
     # trainable_with_resources = tune.with_resources(_tune, {"cpu": NUM_THREADS, "gpu": 1})
 
     # Define the ASHA scheduler for hyperparameter search
@@ -142,12 +155,18 @@ def run_ray_tune(
     tune_dir.mkdir(parents=True, exist_ok=True)
 
     def shorten_trial_dirname(trial):  # Ajustando para receber o objeto trial
-        return hashlib.md5(trial.trial_id.encode()).hexdigest()[:8]    # Gerar um hash curto do trial_id para garantir que o nome do diretório seja único e curto
+        return hashlib.md5(trial.trial_id.encode()).hexdigest()[
+            :8
+        ]  # Gerar um hash curto do trial_id para garantir que o nome do diretório seja único e curto
 
     tuner = tune.Tuner(
         trainable_with_resources,
         param_space=space,
-        tune_config=tune.TuneConfig(scheduler=asha_scheduler, num_samples=max_samples, trial_dirname_creator=shorten_trial_dirname),
+        tune_config=tune.TuneConfig(
+            scheduler=asha_scheduler,
+            num_samples=max_samples,
+            trial_dirname_creator=shorten_trial_dirname,
+        ),
         run_config=RunConfig(callbacks=tuner_callbacks, storage_path=tune_dir),
     )
 

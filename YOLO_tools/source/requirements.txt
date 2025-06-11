@@ -1,0 +1,9 @@
+albumentations==2.0.8
+optuna==4.3.0
+Pillow==11.2.1
+PyYAML==6.0.2
+scikit_learn==1.7.0
+ultralytics==8.3.152
+optuna-dashboard
+opencv-python
+ipykernel
