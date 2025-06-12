@@ -157,7 +157,7 @@ def objective(trial):
         "warmup_bias_lr": trial.suggest_float("warmup_bias_lr", 1e-5, 1e-1, log=True),
         "optimizer": trial.suggest_categorical("optimizer", ["AdamW", "SGD"]),
         "imgsz": trial.suggest_categorical("imgsz", [360, 480, 640]),
-        "batch": trial.suggest_int("batch", 8, 48),
+        "batch": trial.suggest_int("batch", 8, 32),
     }
 
     try:

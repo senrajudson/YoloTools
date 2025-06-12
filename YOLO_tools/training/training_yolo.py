@@ -1,7 +1,7 @@
 from ultralytics import YOLO
 import logging
 import json
-import yaml
+
 
 ### this are a mix of all YOLO built-in augments, if ur implementing manual augments, it's ideal to disable YOLO augments to avoid overlay
 from ultralytics.data.augment import (
@@ -12,16 +12,6 @@ from ultralytics.data.augment import (
     RandomPerspective,
 )
 
-"""
-eu modifiquei as transformações dentro da classe 'Albumentations' no '.../ultralytics/data/augment, 
-foi necessário zerar a probabilidade usando um float 0.0 no transform 'T' e
-mudando o valor de 'p' em __init__ para 'p=0' 
-"""
-albumentations_yolo = Albumentations(p=0.0)
-centercrop_yolo = CenterCrop(0)
-randomflip_yolo = RandomFlip(p=0.0)
-randomhsv_yolo = RandomHSV(hgain=0.0, sgain=0.0, vgain=0.0)
-randomperspective_yolo = RandomPerspective(translate=0.0, scale=0.0)
 
 ### YOLO é gambiarra e eu posso provar:
 """ Para treinamentos de classificação com YOLO, você deve indicar o dir com o dataset
@@ -32,81 +22,98 @@ mas os caras fizeram de forma que o mesmo argumento recebe duas entradas complet
 diferentes a depender do treinamento que você vai fazer.
 """
 
-# # Carregar configurações de um arquivo
-# with open('../hyper_yolo.yaml', 'r') as file:
-#     config = yaml.safe_load(file)
-
-# train_config = config['train']
-# aug_config = config['train']['augmentation']
 
 with open(
     r"D:\Judson_projetos\Yolo_trainer\YOLO_tools\training\params.json", "r"
 ) as file:  # Carregar configurações de um arquivo
     config = json.load(file)
 
-model = YOLO(r"yolo11n.pt")
+model = YOLO(r"yolo11n-cls.pt")
 
-best_recall = (
-    0.0  # Variáveis globais para rastrear o melhor recall e a época correspondente
+# Configuração do logger
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    filename="opt.log",
+    filemode="w",
 )
-best_precision = 0.0
-best_f1score = 0.0
+
+# # # variáveis globais para configuração
+task = "classify"
+range_of_search = 15
+
+# Variáveis globais para rastrear a melhor métrica
 best_mAP50 = 0.0
 best_mAP5095 = 0.0
+best_acc = 0.0
+best_loss = 100.0
 best_epoch = 0
-patience = 100
-limit = patience
+best_metric = 0.0
+limit = patience = range_of_search
+current_metric_value = 0
+current_metric_support = 0
+last_epoch = 0
 
 
 def on_train_epoch_end(trainer):
-    global best_recall, best_precision, best_f1score, best_mAP5095, best_mAP50, best_epoch, limit
+    global best_mAP50, best_epoch, best_acc, best_mAP5095, best_metric, best_loss, limit, patience, current_metric_value, current_metric_support, last_epoch
 
-    logging.basicConfig(  # Configuração do logger
-        level=logging.INFO,  # Nível mínimo de mensagens para registrar
-        format="%(asctime)s - %(levelname)s - %(message)s",
-        filename="training.log",  # Arquivo onde as mensagens serão salvas
-        filemode="w",  # Sobrescreve o arquivo a cada execução
-    )
+    if task == "detect":
 
-    # current_recall = trainer.metrics.get('metrics/recall(B)', 0.0)       # Obtenha o recall atual dos resultados de validação
-    # current_precision = trainer.metrics.get('metrics/precision(B)', 0.0)    # Obtenha o precision atual dos resultados de validação
-    # current_f1score = 2 * (current_precision * current_recall) / (current_precision + current_recall) if current_recall > 0 else 0.0      # f1score
+        # Obter a métrica atual
+        current_metric_value = trainer.metrics.get("metrics/mAP50(B)", 0.0)
+        current_metric_support = trainer.metrics.get("metrics/mAP50-95(B)", 0.0)
 
-    current_mAP50 = trainer.metrics.get(
-        "metrics/mAP50(B)", 0.0
-    )  # mAP50 ajuda no melhor 'recall'
-    current_mAP5095 = trainer.metrics.get(
-        "metrics/mAP50-95(B)", 0.0
-    )  # mAP50-95 ajuda no melhor 'precision'
+        # Atualiza a melhor métrica se a atual for melhor
+        if current_metric_value > best_mAP50 or current_metric_support > best_mAP5095:
+            best_mAP50 = current_metric_value
+            best_epoch = trainer.epoch
+            logging.info(
+                f"Melhor mAP50 atual: {round(best_mAP50, 4)} na época {best_epoch}"
+            )
+            limit = patience  # Reinicia a paciência
+            model.save("best_metric.pt")
 
-    if (
-        current_mAP50 > best_mAP50
-    ):  # Verifique se o recall atual é melhor que o melhor recall registrado
-        best_mAP50 = current_mAP50
-        best_epoch = trainer.epoch
-
-        logging.info(
-            f"\nBest actual metric : {round(best_mAP50, 4)} on epoch {best_epoch}"
+        print(trainer.metrics)
+        print(
+            f"mAP50 atual: {round(current_metric_value, 4)} | mAP5095 atual: {round(current_metric_support, 4)} | Época atual: {trainer.epoch}"
         )
-        limit = patience
+        print(f"Melhor até agora na época: {best_epoch}")
 
-        model.save(
-            f"best_metric.pt"
-        )  # Salve os pesos do modelo para a melhor época com base no recall
+        best_metric = best_mAP50 if best_mAP50 > best_metric else best_metric
 
-    print(trainer.metrics)
-    print(f"\nActual mAP50 : {round(current_mAP50, 4)}")
-    print(f"\nBest actual metric : {round(best_mAP50, 4)} on epoch {best_epoch}")
+    if task == "classify":
+
+        # Pegue a métrica de accuracy da classificação
+        current_metric_value = trainer.metrics.get("metrics/accuracy_top1", 0.0)
+        current_metric_support = trainer.metrics.get("val/loss", 0.0)
+        # ou experimente "metrics/acc(B)", depende do YOLO
+
+        if current_metric_value > best_acc or current_metric_support < best_loss:
+            best_acc = current_metric_value
+            best_loss = current_metric_support if current_metric_support != 0 else 100.0
+            best_epoch = trainer.epoch
+            logging.info(
+                f"Melhor accuracy atual: {round(best_acc, 4)} na época {best_epoch}"
+            )
+            limit = patience
+            model.save("best_metric.pt")
+
+        print(trainer.metrics)
+        print(
+            f"Accuracy atual: {round(current_metric_value, 4)} | Loss atual: {round(current_metric_support, 4)} | Época atual: {trainer.epoch}"
+        )
+        print(f"Melhor até agora na época: {best_epoch}")
+
+        best_metric = best_acc if best_acc > best_metric else best_metric
+        last_epoch = trainer.epoch
 
     limit -= 1
-
     if limit == 0:
-        logging.warning(f"Patience has reached limit at epoch {trainer.epoch}")
-        # logging.error("Erro inesperado no treinamento")
-
+        logging.warning(f"Patience atingido na época {trainer.epoch}")
         raise KeyboardInterrupt
 
-    return current_mAP50
+    return current_metric_value
 
 
 model.add_callback(
@@ -116,7 +123,7 @@ model.add_callback(
 
 def training():
     model.train(
-        data=r"D:\Judson_projetos\Yolo_trainer\YOLO_tools\datasets\efluentes_YOLO_0206\dataset.yaml",
+        data=r"D:\Judson_projetos\Yolo_trainer\YOLO_tools\datasets\efluentes_YOLO_0206",
         device="cuda",
         batch=config["batch"],  ### training configs
         # epochs = config['epochs'],

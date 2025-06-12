@@ -1,0 +1,10 @@
+2025-06-12 14:06:07,230 - INFO - Melhor accuracy atual: 0 na época 0
+2025-06-12 14:06:26,059 - INFO - Melhor accuracy atual: 0.8499 na época 1
+2025-06-12 14:06:44,867 - INFO - Melhor accuracy atual: 0.855 na época 2
+2025-06-12 14:07:42,041 - INFO - Melhor accuracy atual: 0.7506 na época 5
+2025-06-12 14:08:01,130 - INFO - Melhor accuracy atual: 0.8677 na época 6
+2025-06-12 14:08:39,301 - INFO - Melhor accuracy atual: 0.8982 na época 8
+2025-06-12 14:08:58,602 - INFO - Melhor accuracy atual: 0.9059 na época 9
+2025-06-12 14:10:15,610 - INFO - Melhor accuracy atual: 0.9109 na época 13
+2025-06-12 14:11:13,424 - INFO - Melhor accuracy atual: 0.9542 na época 16
+2025-06-12 14:15:45,339 - WARNING - Patience atingido na época 30
