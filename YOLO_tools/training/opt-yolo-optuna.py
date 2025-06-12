@@ -43,10 +43,13 @@ best_loss = 100.0
 best_epoch = 0
 best_metric = 0.0
 limit = patience = range_of_search
+current_metric_value = 0
+current_metric_support = 0
+last_epoch = 0
 
 
 def on_train_epoch_end(trainer):
-    global best_mAP50, best_epoch, best_acc, best_mAP5095, best_metric, best_loss, limit, patience
+    global best_mAP50, best_epoch, best_acc, best_mAP5095, best_metric, best_loss, limit, patience, current_metric_value, current_metric_support, last_epoch
 
     if task == "detect":
 
@@ -65,7 +68,9 @@ def on_train_epoch_end(trainer):
             model.save("best_metric.pt")
 
         print(trainer.metrics)
-        print(f"mAP50 atual: {round(current_metric_value, 4)} | mAP5095 atual: {round(current_metric_support, 4)} | Época atual: {trainer.epoch}")
+        print(
+            f"mAP50 atual: {round(current_metric_value, 4)} | mAP5095 atual: {round(current_metric_support, 4)} | Época atual: {trainer.epoch}"
+        )
         print(f"Melhor até agora na época: {best_epoch}")
 
         best_metric = best_mAP50 if best_mAP50 > best_metric else best_metric
@@ -94,6 +99,7 @@ def on_train_epoch_end(trainer):
         print(f"Melhor até agora na época: {best_epoch}")
 
         best_metric = best_acc if best_acc > best_metric else best_metric
+        last_epoch = trainer.epoch
 
     limit -= 1
     if limit == 0:
@@ -129,7 +135,7 @@ def training(config):
 
 
 def objective(trial):
-    global best_mAP50, best_epoch, best_acc, best_mAP5095, best_metric, best_loss, limit, patience
+    global best_mAP50, best_epoch, best_acc, best_mAP5095, best_metric, best_loss, limit, patience, current_metric_value, current_metric_support, last_epoch
 
     # Variáveis globais para rastrear a melhor métrica
     best_mAP50 = 0.0
@@ -158,6 +164,13 @@ def objective(trial):
         training(config)
     except KeyboardInterrupt:
         logging.info("Treinamento interrompido por early stopping.")
+
+    trial.set_user_attr(f"Melhor época: ", best_epoch)
+    trial.set_user_attr(
+        f"Últimos valores: ",
+        f"Value {current_metric_value} | Support {current_metric_support}",
+    )
+    trial.set_user_attr(f"Última época: ", last_epoch)
 
     # O Optuna espera que a função objetivo retorne a métrica a ser otimizada.
     # Aqui, assumimos que queremos maximizar o mAP50.
