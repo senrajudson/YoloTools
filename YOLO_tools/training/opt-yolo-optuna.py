@@ -33,6 +33,7 @@ logging.basicConfig(
 
 # # # variáveis globais para configuração
 task = "classify"
+range_of_search = 5
 
 # Variáveis globais para rastrear a melhor métrica
 best_mAP50 = 0.0
@@ -41,7 +42,7 @@ best_acc = 0.0
 best_loss = 100.0
 best_epoch = 0
 best_metric = 0.0
-limit = patience = 15
+limit = patience = range_of_search
 
 
 def on_train_epoch_end(trainer):
@@ -54,7 +55,7 @@ def on_train_epoch_end(trainer):
         current_metric_support = trainer.metrics.get("metrics/mAP50-95(B)", 0.0)
 
         # Atualiza a melhor métrica se a atual for melhor
-        if current_metric_value >= best_mAP50 and current_metric_support > best_mAP5095:
+        if current_metric_value > best_mAP50 or current_metric_support > best_mAP5095:
             best_mAP50 = current_metric_value
             best_epoch = trainer.epoch
             logging.info(
@@ -65,9 +66,9 @@ def on_train_epoch_end(trainer):
 
         print(trainer.metrics)
         print(f"mAP50 atual: {round(current_metric_value, 4)}")
-        print(f"Melhor mAP50 até agora: {round(best_mAP50, 4)} na época {best_epoch}")
+        print(f"Melhor até agora na época: {best_epoch}")
 
-        best_metric = best_mAP50
+        best_metric = best_mAP50 if best_mAP50 > best_metric else best_metric
 
     if task == "classify":
 
@@ -76,7 +77,7 @@ def on_train_epoch_end(trainer):
         current_metric_support = trainer.metrics.get("val/loss", 0.0)
         # ou experimente "metrics/acc(B)", depende do YOLO
 
-        if current_metric_value >= best_acc and current_metric_support <= best_loss:
+        if current_metric_value > best_acc or current_metric_support < best_loss:
             best_acc = current_metric_value
             best_loss = current_metric_support if current_metric_support != 0 else 100.0
             best_epoch = trainer.epoch
@@ -90,9 +91,9 @@ def on_train_epoch_end(trainer):
         print(
             f"Accuracy atual: {round(current_metric_value, 4)} | Loss atual: {round(current_metric_support, 4)}"
         )
-        print(f"Melhor accuracy até agora: {round(best_acc, 4)} na época {best_epoch}")
+        print(f"Melhor até agora na época: {best_epoch}")
 
-        best_metric = best_acc
+        best_metric = best_acc if best_acc > best_metric else best_metric
 
     limit -= 1
     if limit == 0:
@@ -137,7 +138,7 @@ def objective(trial):
     best_loss = 100.0
     best_epoch = 0
     best_metric = 0.0
-    limit = patience
+    limit = patience = range_of_search
 
     # Define o espaço de busca usando o objeto trial
     config = {
