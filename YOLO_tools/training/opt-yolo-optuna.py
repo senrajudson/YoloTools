@@ -65,7 +65,7 @@ def on_train_epoch_end(trainer):
             model.save("best_metric.pt")
 
         print(trainer.metrics)
-        print(f"mAP50 atual: {round(current_metric_value, 4)}")
+        print(f"mAP50 atual: {round(current_metric_value, 4)} | mAP5095 atual: {round(current_metric_support, 4)} | Época atual: {trainer.epoch}")
         print(f"Melhor até agora na época: {best_epoch}")
 
         best_metric = best_mAP50 if best_mAP50 > best_metric else best_metric
@@ -89,7 +89,7 @@ def on_train_epoch_end(trainer):
 
         print(trainer.metrics)
         print(
-            f"Accuracy atual: {round(current_metric_value, 4)} | Loss atual: {round(current_metric_support, 4)}"
+            f"Accuracy atual: {round(current_metric_value, 4)} | Loss atual: {round(current_metric_support, 4)} | Época atual: {trainer.epoch}"
         )
         print(f"Melhor até agora na época: {best_epoch}")
 
