@@ -1,4 +1,5 @@
 from YOLO_tools.source.modules.slicing import slicing_dataset_for_traning
+from YOLO_tools.source.modules.enhance import enhance_dataset_images 
 from YOLO_tools.source.modules.augmentations import aug_dataset 
 
 # from source.modules.training_YOLO_model import training_YOLO_model
@@ -34,6 +35,11 @@ class YOLOTrainer:
             self.dataset_path, 
             self.n_aug, 
             self.odd,
+            )
+        
+    def enhance(self):
+        enhance_dataset_images(
+            self.dataset_path, 
             )
 
     @property
