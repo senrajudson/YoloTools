@@ -1,4 +1,5 @@
-from source.modules.slicing_dataset import slicing_dataset_for_traning
+from YOLO_tools.source.modules.slicing import slicing_dataset_for_traning
+from YOLO_tools.source.modules.augmentations import aug_dataset 
 
 # from source.modules.training_YOLO_model import training_YOLO_model
 # from source.modules.model_predict import predict_YOLO_model
@@ -13,7 +14,7 @@ class YOLOTrainer:
         self.test_percentual_divisor = 1
         self.dataset_path = None
         self.task = None
-        self.aug = False
+        self.augment = False
         self.n_aug = 2
         self.odd = 0.5
 
@@ -25,10 +26,15 @@ class YOLOTrainer:
             self.yolo_Classes,
             self.test_percentual_divisor,
             self.dataset_path,
-            self.aug,
-            self.n_aug,
-            self.odd,
         )
+
+    def aug(self):
+        aug_dataset(
+            self.task, 
+            self.dataset_path, 
+            self.n_aug, 
+            self.odd,
+            )
 
     @property
     def image_folder(self):

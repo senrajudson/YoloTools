@@ -40,7 +40,7 @@ logging.basicConfig(
 
 # # # variáveis globais para configuração
 task = "classify"
-range_of_search = 15
+range_of_search = 100
 
 # Variáveis globais para rastrear a melhor métrica
 best_mAP50 = 0.0
@@ -128,6 +128,7 @@ def training():
         batch=config["batch"],  ### training configs
         # epochs = config['epochs'],
         epochs=300,
+        patience=15,
         imgsz=config["imgsz"],
         lr0=config["lr0"],
         lrf=config["lrf"],
