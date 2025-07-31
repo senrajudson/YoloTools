@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  tuning:
+    build: .
+    container_name: yolo_tuning
+    volumes:
+      - "/mnt/d/Judson_projetos/Yolo_trainer/YOLO_tools/datasets/emissoes_novo_yolo_3007:/workspace/datasets:ro"
+      - "./ray_logs:/workspace/ray_logs"
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=0
+    working_dir: /workspace/src
+    command: python3.10 yolo_tune.py
