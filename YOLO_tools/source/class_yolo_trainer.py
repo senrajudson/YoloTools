@@ -1,6 +1,6 @@
-from YOLO_tools.source.modules.slicing import slicing_dataset_for_traning
-from YOLO_tools.source.modules.enhance import enhance_dataset_images 
-from YOLO_tools.source.modules.augmentations import aug_dataset 
+from source.modules.slicing import slicing_dataset_for_traning
+from source.modules.enhance import enhance_dataset_images 
+from source.modules.augmentations import aug_dataset 
 
 # from source.modules.training_YOLO_model import training_YOLO_model
 # from source.modules.model_predict import predict_YOLO_model
@@ -91,12 +91,12 @@ class YOLOTrainer:
         self._task = value
 
     @property
-    def aug(self):
-        return self._aug
+    def augment(self):
+        return self._augment
 
-    @aug.setter
-    def aug(self, value):
-        self._aug = value
+    @augment.setter
+    def augment(self, value):
+        self._augment = value
 
     @property
     def n_aug(self):

@@ -1,33 +1,26 @@
-from ultralytics import YOLO
+import optuna
 import logging
-import json
-
-
-### this are a mix of all YOLO built-in augments, if ur implementing manual augments, it's ideal to disable YOLO augments to avoid overlay
+from ultralytics import YOLO
 from ultralytics.data.augment import (
+    Mosaic,
+    MixUp,
     Albumentations,
-    CenterCrop,
-    RandomFlip,
-    RandomHSV,
+    LetterBox,
+    CopyPaste,
     RandomPerspective,
+    Compose,
 )
 
+"""_summary_
+o YOLO tem modelos específicos para cada tarefa. Nunca se esqueça de trocar os modelos, pois a 
+sua task precisa do modelo correto.
 
-### YOLO é gambiarra e eu posso provar:
-""" Para treinamentos de classificação com YOLO, você deve indicar o dir com o dataset
-que deve estar especificado dentro de uma pasta chamada 'datasets'. No entando, para detecção
-o YOLO é diferente. Você precisa indicar o caminho do arquivo 'dataset.yaml' para que ele 
-possa encontrar o dataset e realizar o treinamento. É a mesma função, de uma mesma lib,
-mas os caras fizeram de forma que o mesmo argumento recebe duas entradas completamente 
-diferentes a depender do treinamento que você vai fazer.
+Não se esqueça de modificar também a função de callback para retornar as métricas do seu modelo.
 """
 
+# Remova ou comente as importações relacionadas ao ray/tune se não forem necessárias.
 
-with open(
-    r"D:\Judson_projetos\Yolo_trainer\YOLO_tools\training\params.json", "r"
-) as file:  # Carregar configurações de um arquivo
-    config = json.load(file)
-
+# Inicialize o modelo
 model = YOLO(r"yolo11n.pt")
 
 # Configuração do logger
@@ -116,21 +109,78 @@ def on_train_epoch_end(trainer):
     return current_metric_value
 
 
-# model.add_callback(
-#     "on_train_epoch_end", on_train_epoch_end
-# )  # Adicione o callback personalizado ao modelo
+def training(config):
 
+    # Remove callbacks anteriores e adiciona o callback customizado
+    model.reset_callbacks()
+    model.add_callback("on_train_epoch_end", on_train_epoch_end)
 
-def training():
-
-    # Iniciar o treinamento com os parâmetros do JSON
+    # Executa o treinamento
     model.train(
-        data=r"D:/Judson_projetos/Yolo_trainer/YOLO_tools/datasets/emissoes_completo_yolo_1607/dataset.yaml",
+        data=r"D:\Judson_projetos\Yolo_trainer\YOLO_tools\datasets\efluentes_YOLO_0206",
         device="cuda",
-        patience=50,
-        # workers=0,
         **config
     )
+    
+    print("Treinamento finalizado para esta configuração.")
+
+
+def objective(trial):
+    global best_mAP50, best_epoch, best_acc, best_mAP5095, best_metric, best_loss, limit, patience, current_metric_value, current_metric_support, last_epoch
+
+    # Variáveis globais para rastrear a melhor métrica
+    best_mAP50 = 0.0
+    best_mAP5095 = 0.0
+    best_acc = 0.0
+    best_loss = 100.0
+    best_epoch = 0
+    best_metric = 0.0
+    limit = patience = range_of_search
+
+    # Define o espaço de busca usando o objeto trial
+    config = {
+        "lr0": trial.suggest_float("lr0", 1e-5, 1e-1, log=True),
+        "lrf": trial.suggest_float("lrf", 1e-5, 1e-2, log=True),
+        "weight_decay": trial.suggest_float("weight_decay", 1e-3, 1e-2),
+        "momentum": trial.suggest_float("momentum", 0.8, 0.95),
+        "warmup_epochs": trial.suggest_int("warmup_epochs", 1, 5),
+        "warmup_momentum": trial.suggest_float("warmup_momentum", 0.4, 0.8),
+        "warmup_bias_lr": trial.suggest_float("warmup_bias_lr", 1e-5, 1e-1, log=True),
+        "optimizer": trial.suggest_categorical("optimizer", ["AdamW", "SGD"]),
+        "imgsz": trial.suggest_categorical("imgsz", [360, 480, 640]),
+        "batch": trial.suggest_int("batch", 8, 32),
+        "epochs": trial.suggest_int("epochs", 30, 200),
+    }
+
+    try:
+        training(config)
+    except KeyboardInterrupt:
+        logging.info("Treinamento interrompido por early stopping.")
+
+    trial.set_user_attr(f"Melhor época: ", best_epoch)
+    trial.set_user_attr(
+        f"Últimos valores: ",
+        f"Value {current_metric_value} | Support {current_metric_support}",
+    )
+    trial.set_user_attr(f"Última época: ", last_epoch)
+
+    # O Optuna espera que a função objetivo retorne a métrica a ser otimizada.
+    # Aqui, assumimos que queremos maximizar o mAP50.
+    return best_metric
+
 
 if __name__ == "__main__":
-    training()
+    # Cria o estudo especificando que a métrica deve ser maximizada
+    study = optuna.create_study(
+        direction="maximize",
+        storage="sqlite:///yolo11-opt.db",
+        study_name="yolo11-opt-efluentes-10-06",
+        load_if_exists=True,
+    )
+
+    # Número de trials pode ser ajustado conforme sua necessidade
+    study.optimize(objective, n_trials=100)
+    print("Melhor valor da métrica: ", study.best_value)
+    print("Melhores hiperparâmetros: ", study.best_params)
+
+# # # optuna-dashboard sqlite:///yolo11-opt.db --server=wsgiref --port=8070
