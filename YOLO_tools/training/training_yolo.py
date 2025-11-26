@@ -119,7 +119,7 @@ def on_train_epoch_end(trainer):
 # model.add_callback(
 #     "on_train_epoch_end", on_train_epoch_end
 # )  # Adicione o callback personalizado ao modelo
-
+###
 
 def training():
 
