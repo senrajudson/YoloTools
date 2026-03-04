@@ -16,5 +16,6 @@ __pycache__
 *.yaml
 ray_sessions
 wandb
-*.pt
+models
 runs
+*logs*

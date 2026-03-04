@@ -1,0 +1,61 @@
+# Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+
+import re
+from ultralytics.utils import SETTINGS
+
+try:
+    assert SETTINGS["raytune"] is True
+    from ray import tune
+    from ray.train._internal.session import get_session as get_train_session
+except (ImportError, AssertionError):
+    tune = None
+    get_train_session = None
+
+
+def _sanitize_key(k: str) -> str:
+    # "metrics/mAP50-95(B)" -> "metrics_mAP50-95_B"
+    k = str(k)
+    k = k.replace("/", "_")
+    k = k.replace("(", "_").replace(")", "")
+    k = re.sub(r"[^0-9a-zA-Z_\-\.]+", "_", k)
+    k = re.sub(r"_+", "_", k).strip("_")
+    return k
+
+
+def _to_float(v):
+    try:
+        return float(v)
+    except Exception:
+        return None
+
+
+def on_fit_epoch_end(trainer):
+    if not tune or not get_train_session:
+        return
+
+    if not get_train_session():
+        return
+
+    raw = getattr(trainer, "metrics", {}) or {}
+
+    # 1) métricas originais (mantém chaves como "metrics/mAP50-95(B)")
+    out = {}
+    for k, v in raw.items():
+        fv = _to_float(v)
+        if fv is not None:
+            out[str(k)] = fv
+
+    # 2) métricas sanitizadas (duplicadas) para MLflow / consumo externo
+    for k, v in raw.items():
+        fv = _to_float(v)
+        if fv is None:
+            continue
+        out[_sanitize_key(k)] = fv
+
+    out["epoch"] = int(trainer.epoch + 1)
+
+    # 3) reporte como dict (não kwargs)
+    tune.report(out)
+
+
+callbacks = {"on_fit_epoch_end": on_fit_epoch_end} if tune else {}

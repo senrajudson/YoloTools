@@ -1,0 +1,13 @@
+FROM python:3.10.13
+
+# Copia o script para o container
+WORKDIR /workspace
+COPY . /workspace
+
+WORKDIR /workspace/src
+
+# Instalam Ray e Tune, além de ultralytics
+RUN pip install opencv-python-headless 'ray[tune]' ultralytics
+
+# Define o comando padrão da execução
+CMD ["python3.10", "yolo_tune.py"]
