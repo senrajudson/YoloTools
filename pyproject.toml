@@ -15,7 +15,10 @@ dependencies = [
   "torch (>=0.1)",
   "torchvision (>=0.1)",
   "ultralytics (>=0.1)",
-  "opencv-python (>=0.1)"
+  "opencv-python (>=0.1)",
+  "albumentations (>=2.0.8,<3.0.0)",
+  "pillow (>=12.1.1,<13.0.0)",
+  "pyyaml (>=6.0.3,<7.0.0)"
 ]
 
 [tool.poetry]
@@ -33,3 +36,7 @@ priority = "explicit"
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+[dependency-groups]
+dev = [
+    "ipykernel (>=7.2.0,<8.0.0)"
+]

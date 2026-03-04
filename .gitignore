@@ -19,3 +19,4 @@ wandb
 models
 runs
 *logs*
+*dataset*

@@ -6,4 +6,12 @@ def predict_YOLO_model(train, objectToPredict, predict_confidence):
     """
 
     model = YOLO(f"runs/detect/{train}/weights/best.pt")
-    model.predict(objectToPredict, save=True, conf=predict_confidence, device="cuda", save_txt=False, save_conf=True, save_crop=False)
+    model.predict(
+        objectToPredict,
+        save=True,
+        conf=predict_confidence,
+        device="cuda",
+        save_txt=False,
+        save_conf=True,
+        save_crop=False,
+    )

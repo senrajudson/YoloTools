@@ -18,7 +18,7 @@ def cvat_dataset(path_folder, output_folder_name):
     image_path  = f"{output_folder_name}/images"
     text_path = f"{output_folder_name}/labels"
     text = re.compile(r'\.txt')
-    image = re.compile(r'\.png')
+    image = re.compile(r'\.(png|jpg|jpeg)$')
 
     for file in os.listdir(path_folder):
         path_file = os.path.join(path_folder, file)
@@ -33,4 +33,4 @@ def cvat_dataset(path_folder, output_folder_name):
             shutil.copy(path_file, file_destination)
             continue
         
-        print("???", file)
+        print("? ", file)
