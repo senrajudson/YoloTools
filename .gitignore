@@ -20,3 +20,4 @@ models
 runs
 *logs*
 *dataset*
+*.pt*
