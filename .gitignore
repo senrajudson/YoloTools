@@ -21,3 +21,4 @@ runs
 *logs*
 *dataset*
 *.pt*
+*mlartifacts*

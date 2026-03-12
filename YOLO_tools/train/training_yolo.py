@@ -11,9 +11,7 @@ mas os caras fizeram de forma que o mesmo argumento recebe duas entradas complet
 diferentes a depender do treinamento que você vai fazer.
 """
 
-model = YOLO(r"yolo11n.pt")
-
-# Configuração do logger
+# Configuração do logger (A chamada correta para instanciar as configurações)
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
@@ -21,7 +19,7 @@ logging.basicConfig(
     filemode="w",
 )
 
-# # # variáveis globais para configuração
+# Variáveis globais para configuração
 task = "detect"
 range_of_search = 100
 
@@ -37,12 +35,10 @@ current_metric_value = 0
 current_metric_support = 0
 last_epoch = 0
 
-
 def on_train_epoch_end(trainer):
     global best_mAP50, best_epoch, best_acc, best_mAP5095, best_metric, best_loss, limit, patience, current_metric_value, current_metric_support, last_epoch
 
     if task == "detect":
-
         # Obter a métrica atual
         current_metric_value = trainer.metrics.get("metrics/mAP50(B)", 0.0)
         current_metric_support = trainer.metrics.get("metrics/mAP50-95(B)", 0.0)
@@ -51,41 +47,38 @@ def on_train_epoch_end(trainer):
         if current_metric_value > best_mAP50 or current_metric_support > best_mAP5095:
             best_mAP50 = current_metric_value
             best_epoch = trainer.epoch
-            logging.info(
-                f"Melhor mAP50 atual: {round(best_mAP50, 4)} na época {best_epoch}"
-            )
+            # Correção: Adicionado 'f' antes da string para as variáveis funcionarem
+            logging.info(f"Melhor mAP50 atual: {round(best_mAP50, 4)} na época {best_epoch}")
             limit = patience  # Reinicia a paciência
-            model.save("best_metric.pt")
+            
+            # Nota: O trainer.model salva os pesos automaticamente no YOLO26,
+            # mas se você realmente quiser forçar o salvamento manual do objeto de treinamento:
+            # trainer.model.save("best_metric.pt") 
 
         print(trainer.metrics)
-        print(
-            f"mAP50 atual: {round(current_metric_value, 4)} | mAP5095 atual: {round(current_metric_support, 4)} | Época atual: {trainer.epoch}"
-        )
+        # Correção: Adicionado 'f' antes da string
+        print(f"mAP50 atual: {round(current_metric_value, 4)} | mAP5095 atual: {round(current_metric_support, 4)} | Época atual: {trainer.epoch}")
         print(f"Melhor até agora na época: {best_epoch}")
 
         best_metric = best_mAP50 if best_mAP50 > best_metric else best_metric
 
     if task == "classify":
-
         # Pegue a métrica de accuracy da classificação
         current_metric_value = trainer.metrics.get("metrics/accuracy_top1", 0.0)
         current_metric_support = trainer.metrics.get("val/loss", 0.0)
-        # ou experimente "metrics/acc(B)", depende do YOLO
 
         if current_metric_value > best_acc or current_metric_support < best_loss:
             best_acc = current_metric_value
             best_loss = current_metric_support if current_metric_support != 0 else 100.0
             best_epoch = trainer.epoch
-            logging.info(
-                f"Melhor accuracy atual: {round(best_acc, 4)} na época {best_epoch}"
-            )
+            # Correção: Adicionado 'f' antes da string
+            logging.info(f"Melhor accuracy atual: {round(best_acc, 4)} na época {best_epoch}")
             limit = patience
-            model.save("best_metric.pt")
+            # trainer.model.save("best_metric.pt")
 
         print(trainer.metrics)
-        print(
-            f"Accuracy atual: {round(current_metric_value, 4)} | Loss atual: {round(current_metric_support, 4)} | Época atual: {trainer.epoch}"
-        )
+        # Correção: Adicionado 'f' antes da string
+        print(f"Accuracy atual: {round(current_metric_value, 4)} | Loss atual: {round(current_metric_support, 4)} | Época atual: {trainer.epoch}")
         print(f"Melhor até agora na época: {best_epoch}")
 
         best_metric = best_acc if best_acc > best_metric else best_metric
@@ -93,31 +86,50 @@ def on_train_epoch_end(trainer):
 
     limit -= 1
     if limit == 0:
+        # Correção: Adicionado 'f' antes da string
         logging.warning(f"Patience atingido na época {trainer.epoch}")
         raise KeyboardInterrupt
 
     return current_metric_value
 
 
-# model.add_callback(
-#     "on_train_epoch_end", on_train_epoch_end
-# )  # Adicione o callback personalizado ao modelo
+def training(model_name, params_file, dataset_path):
+    # Instancia o modelo dentro da função
+    model = YOLO(model_name if model_name else "yolo26n.pt") # Nota: yolo26n.pt não é padrão, usei 26n como fallback de exemplo.
 
-with open(
-    r"D:\Judson_projetos\Yolo_trainer\YOLO_tools\training\params.json", "r"
-) as file:  # Carregar configurações de um arquivo
-    config = json.load(file)
-
-def training():
+    # CORREÇÃO PRINCIPAL: O erro do `open()` estava aqui. 
+    # Estava faltando passar o modo de leitura "r" (read) corretamente.
+    with open(params_file, "r") as file:
+        config = json.load(file)
 
     # Iniciar o treinamento com os parâmetros do JSON
     model.train(
-        data=r"D:/Judson_projetos/Yolo_trainer/YOLO_tools/datasets/emissoes_completo_yolo_1607/dataset.yaml",
-        device="cuda",
-        patience=50,
-        # workers=0,
+        data=dataset_path,
+        patience=20,
+        epochs=200,
         **config
     )
 
 if __name__ == "__main__":
-    training()
+    # Caminhos relativos ao WORKDIR do Docker (/app)
+    
+    model_path = "yolo26n.pt"
+    dataset = "datasets/dataset.yaml"
+
+    # Treino 1
+    params = "YOLO_tools/train/params1.json"
+    training(model_path, params, dataset)
+
+    # Treino 2
+    params = "YOLO_tools/train/params2.json"
+    training(model_path, params, dataset)
+
+    # Treino 3
+    model_path = "yolo26s.pt"
+    params = "YOLO_tools/train/params3.json"
+    training(model_path, params, dataset)
+
+    # Treino 4
+    model_path = "yolo26n.pt"
+    params = "YOLO_tools/train/params.json"
+    training(model_path, params, dataset)

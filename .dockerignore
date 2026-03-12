@@ -1,0 +1,15 @@
+**/*dataset_cvat*
+**/train/runs/
+**/.git/
+**/*pycache*
+**/*venv*
+**/*dataset*
+**/*.pt*
+**/*mlartifacts*
+**/*mlflow*
+**/*logs*
+**/*png*
+**/*jpg*
+**/*txt*
+**/*jpeg*
+**/*.git*
