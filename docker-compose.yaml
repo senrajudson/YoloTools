@@ -16,6 +16,9 @@ services:
     volumes:
       # 1. Espelhamento dos resultados (Leitura e Escrita)
       - "/home/administrator/projetos/YoloTools/YOLO_tools/train/runs:/app/train/runs"
+      
+      # 
+      - "/home/administrator/projetos/YoloTools/runs:/app/runs"
 
       # 2. Espelhamento do Dataset (Recomendado: readonly para segurança)
       # Ao usar :ro, o container pode ler as imagens mas não pode deletar nada por acidente
