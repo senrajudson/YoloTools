@@ -12,7 +12,6 @@ fake*
 *.avi
 __pycache__
 *venv*
-*.yaml
 ray_sessions
 wandb
 models

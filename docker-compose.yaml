@@ -1,0 +1,27 @@
+services:
+  yolotools-train:
+    build: .
+    container_name: yolotools_container
+    shm_size: '40gb'
+
+  # ISSO AQUI FAZ A PONTE DE HARDWARE:
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+    volumes:
+      # 1. Espelhamento dos resultados (Leitura e Escrita)
+      - "/home/administrator/projetos/YoloTools/YOLO_tools/train/runs:/app/train/runs"
+
+      # 2. Espelhamento do Dataset (Recomendado: readonly para segurança)
+      # Ao usar :ro, o container pode ler as imagens mas não pode deletar nada por acidente
+      - "/home/administrator/projetos/YoloTools/YOLO_tools/datasets:/app/datasets:ro"
+
+      # Nota: A pasta 'dataset_cvat' NÃO foi incluída aqui. 
+      # Como ela não está mapeada no 'volumes', o container nem saberá que ela existe.
+    
+    restart: unless-stopped

@@ -107,6 +107,7 @@ def training(model_name, params_file, dataset_path):
         data=dataset_path,
         patience=20,
         epochs=200,
+        cache="ram",
         **config
     )
 
@@ -114,7 +115,7 @@ if __name__ == "__main__":
     # Caminhos relativos ao WORKDIR do Docker (/app)
     
     model_path = "yolo26n.pt"
-    dataset = "datasets/dataset.yaml"
+    dataset = "datasets/emissoes_YOLO/dataset.yaml"
 
     # Treino 1
     params = "YOLO_tools/train/params1.json"
