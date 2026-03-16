@@ -38,11 +38,11 @@ if __name__ == "__main__":
     # Nomeia o grupo de testes
     mlflow.set_tracking_uri("file:///app/mlruns")
 
-    os.environ["MLFLOW_EXPERIMENT_NAME"] = "Otimizacao_YOLO_v8"
+    os.environ["MLFLOW_EXPERIMENT_NAME"] = "Otimizacao_YOLO_v9"
     tune("yolo26n.pt", args)
 
     # Nomeia o grupo de testes
-    os.environ["MLFLOW_EXPERIMENT_NAME"] = "Otimizacao_YOLO_v9"
+    os.environ["MLFLOW_EXPERIMENT_NAME"] = "Otimizacao_YOLO_v10"
     tune("yolo26s.pt", args)
 
 #--------------------------------------------------------------------------------------

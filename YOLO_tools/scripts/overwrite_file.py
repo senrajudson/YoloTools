@@ -26,7 +26,7 @@ def patch_metrics():
     if count > 0:
         with open(metrics_path, 'w', encoding='utf-8') as f:
             f.write(new_content)
-        print(f"✅ Sucesso! Modificamos os pesos do fitness para [0.0, 0.2, 0.8, 0.0].")
+        print(f"✅ Sucesso! Modificamos os pesos do fitness para [0.0, 0.5, 0.5, 0.0].") # modelo focado em melhorar a classificação sobre a detecção
     else:
         print("❌ Aviso: Padrão não encontrado. A versão do Ultralytics mudou?")
 
