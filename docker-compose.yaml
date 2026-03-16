@@ -24,6 +24,9 @@ services:
       # Ao usar :ro, o container pode ler as imagens mas não pode deletar nada por acidente
       - "/home/administrator/projetos/YoloTools/YOLO_tools/datasets:/app/datasets:ro"
 
+      # Lado Direito (Container): Mapeia para o diretório onde o Python vai salvar os dados
+      - ./mlruns:/app/mlruns
+
       # Nota: A pasta 'dataset_cvat' NÃO foi incluída aqui. 
       # Como ela não está mapeada no 'volumes', o container nem saberá que ela existe.
     

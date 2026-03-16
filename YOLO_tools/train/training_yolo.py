@@ -133,4 +133,3 @@ if __name__ == "__main__":
     # Treino 4
     model_path = "yolo26n.pt"
     params = "YOLO_tools/train/params.json"
-    training(model_path, params, dataset)

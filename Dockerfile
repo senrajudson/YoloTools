@@ -40,5 +40,12 @@ RUN poetry install
 # Copia o resto do código do projeto
 COPY . .
 
+# >>> O PULO DO GATO: Roda o script para hackear o Ultralytics na hora do build <<<
+RUN poetry run python -m YOLO_tools.scripts.overwrite_file
+
 # Comando para iniciar o treino
-CMD ["poetry", "run", "python", "-m", "YOLO_tools.train.training_yolo"]
+# CMD ["poetry", "run", "python", "-m", "YOLO_tools.train.training_yolo"]
+
+#YOLO_tools/opt/opt_yolo_raytune_mlflow.py
+CMD ["poetry", "run", "python", "-m", "YOLO_tools.opt.opt_yolo_raytune_mlflow"]
+
