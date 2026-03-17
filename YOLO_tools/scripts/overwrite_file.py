@@ -19,14 +19,15 @@ def patch_metrics():
     pattern = r"(w\s*=\s*)\[.*?\](\s*# weights for \[P, R, mAP@0\.5, mAP@0\.5:0\.95\])"
     
     # Substitui preservando o 'w = ' inicial (\g<1>) e o comentário final (\g<2>)
-    replacement = r"\g<1>[0.0, 0.2, 0.8, 0.0]\g<2>"
+    w,x,y,z = [0.0, 0.0, 1.0, 0.0]
+    replacement = rf"\g<1>[{w}, {x}, {y}, {z}]\g<2>" #[P, R, MAP50, MAP5095]
 
     new_content, count = re.subn(pattern, replacement, content)
 
     if count > 0:
         with open(metrics_path, 'w', encoding='utf-8') as f:
             f.write(new_content)
-        print(f"✅ Sucesso! Modificamos os pesos do fitness para [0.0, 0.5, 0.5, 0.0].") # modelo focado em melhorar a classificação sobre a detecção
+        print(f"✅ Sucesso! Modificamos os pesos do fitness para [{w}, {x}, {y}, {z}].") # modelo focado em melhorar a classificação sobre a detecção
     else:
         print("❌ Aviso: Padrão não encontrado. A versão do Ultralytics mudou?")
 
