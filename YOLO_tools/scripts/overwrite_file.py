@@ -1,8 +1,9 @@
 import re
 import os
+from typing import List
 import ultralytics
 
-def patch_metrics():
+def patch_metrics(metrics: List):
     # Encontra o caminho dinâmico de onde o ultralytics foi instalado no container
     lib_dir = os.path.dirname(ultralytics.__file__)
     metrics_path = os.path.join(lib_dir, 'utils', 'metrics.py')
@@ -19,7 +20,7 @@ def patch_metrics():
     pattern = r"(w\s*=\s*)\[.*?\](\s*# weights for \[P, R, mAP@0\.5, mAP@0\.5:0\.95\])"
     
     # Substitui preservando o 'w = ' inicial (\g<1>) e o comentário final (\g<2>)
-    w,x,y,z = [0.0, 0.0, 1.0, 0.0]
+    w,x,y,z = metrics
     replacement = rf"\g<1>[{w}, {x}, {y}, {z}]\g<2>" #[P, R, MAP50, MAP5095]
 
     new_content, count = re.subn(pattern, replacement, content)
@@ -32,4 +33,5 @@ def patch_metrics():
         print("❌ Aviso: Padrão não encontrado. A versão do Ultralytics mudou?")
 
 if __name__ == "__main__":
-    patch_metrics()
+    metrics = [0.0, 0.0, 1.0, 0.0]
+    patch_metrics(metrics)

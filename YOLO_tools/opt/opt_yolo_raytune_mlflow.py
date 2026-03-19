@@ -16,7 +16,7 @@ def tune(model_path, args):
     import ultralytics.utils
 
     # 2. Force o valor que você quer (ex: 6 CPUs por trial)
-    ultralytics.utils.NUM_THREADS = 6
+    ultralytics.utils.NUM_THREADS = 12
 
     model.tune(
         data=DATA_YAML,
@@ -47,9 +47,9 @@ if __name__ == "__main__":
     os.environ["MLFLOW_EXPERIMENT_NAME"] = "Otimizacao_YOLO_v12"
     tune("yolo26s.pt", args)
 
-    # Nomeia o grupo de testes
-    os.environ["MLFLOW_EXPERIMENT_NAME"] = "Otimizacao_YOLO_v13"
-    tune("yolo26n.pt", args)
+    # # Nomeia o grupo de testes
+    # os.environ["MLFLOW_EXPERIMENT_NAME"] = "Otimizacao_YOLO_v13"
+    # tune("yolo26n.pt", args)
 
 #--------------------------------------------------------------------------------------
 # CONFIGURAR POETRY PARA LOCAL VITUALVENV | poetry config virtualenvs.in-project true |

@@ -94,6 +94,12 @@ def on_train_epoch_end(trainer):
 
 
 def training(model_name, params_file, dataset_path):
+
+    import ultralytics.utils
+
+    # 2. Force o valor que você quer (ex: 6 CPUs por trial)
+    ultralytics.utils.NUM_THREADS = 12    
+
     # Instancia o modelo dentro da função
     model = YOLO(model_name if model_name else "yolo26n.pt") # Nota: yolo26n.pt não é padrão, usei 26n como fallback de exemplo.
 
@@ -105,31 +111,38 @@ def training(model_name, params_file, dataset_path):
     # Iniciar o treinamento com os parâmetros do JSON
     model.train(
         data=dataset_path,
+        device="cuda",
+        cache="ram",
         patience=20,
         epochs=200,
-        cache="ram",
         **config
     )
 
 if __name__ == "__main__":
     # Caminhos relativos ao WORKDIR do Docker (/app)
-    
-    model_path = "yolo26n.pt"
-    dataset = "datasets/emissoes_YOLO/dataset.yaml"
+
+    from YOLO_tools.scripts.overwrite_file import patch_metrics
 
     # Treino 1
-    params = "YOLO_tools/train/params1.json"
+    metrics = [0.0, 0.0, 1.0, 0.0] # [P, R, MAP50, MAP5095]
+    patch_metrics(metrics)
+    model_path = "yolo26s.pt"
+    dataset = "datasets/emissoes_YOLO/dataset.yaml"
+    params = "YOLO_tools/train/params4.json"
     training(model_path, params, dataset)
 
     # Treino 2
-    params = "YOLO_tools/train/params2.json"
-    training(model_path, params, dataset)
+    # params = "YOLO_tools/train/params2.json"
+    # training(model_path, params, dataset)
 
     # Treino 3
+    metrics = [0.0, 0.0, 0.0, 1.0] # [P, R, MAP50, MAP5095]
+    patch_metrics(metrics)
     model_path = "yolo26s.pt"
+    dataset = "datasets/emissoes_YOLO/dataset.yaml"
     params = "YOLO_tools/train/params3.json"
     training(model_path, params, dataset)
 
-    # Treino 4
-    model_path = "yolo26n.pt"
-    params = "YOLO_tools/train/params.json"
+    # # Treino 4
+    # model_path = "yolo26n.pt"
+    # params = "YOLO_tools/train/params.json"
