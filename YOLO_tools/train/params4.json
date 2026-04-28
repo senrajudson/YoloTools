@@ -3,7 +3,7 @@
   "imgsz": 640,
   "save": true,
   "device": 0,
-  "workers": 8,
+  "workers": 12,
   "optimizer": "auto",
   "seed": 0,
   "deterministic": true,

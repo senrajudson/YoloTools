@@ -111,38 +111,65 @@ def training(model_name, params_file, dataset_path):
     # Iniciar o treinamento com os parâmetros do JSON
     model.train(
         data=dataset_path,
-        device="cuda",
         cache="ram",
-        patience=20,
+        patience=100,
         epochs=200,
         **config
     )
 
+# %%
 if __name__ == "__main__":
     # Caminhos relativos ao WORKDIR do Docker (/app)
 
     from YOLO_tools.scripts.overwrite_file import patch_metrics
 
-    # Treino 1
-    metrics = [0.0, 0.0, 1.0, 0.0] # [P, R, MAP50, MAP5095]
-    patch_metrics(metrics)
-    model_path = "yolo26s.pt"
-    dataset = "datasets/emissoes_YOLO/dataset.yaml"
-    params = "YOLO_tools/train/params4.json"
-    training(model_path, params, dataset)
-
-    # Treino 2
-    # params = "YOLO_tools/train/params2.json"
+    # Treino 12 /app/runs/detect/train12
+    # metrics = [0.0, 0.0, 1.0, 0.0] # [P, R, MAP50, MAP5095]
+    # patch_metrics(metrics)
+    # # #    model = YOLO("runs/detect/train7/weights/last.pt")
+    # model_path = "runs/detect/train7/weights/last.pt" # # # modelo train7
+    # dataset = "datasets/emissoes_YOLO/dataset.yaml"
+    # params = "YOLO_tools/train/params4.json"
     # training(model_path, params, dataset)
 
-    # Treino 3
-    metrics = [0.0, 0.0, 0.0, 1.0] # [P, R, MAP50, MAP5095]
-    patch_metrics(metrics)
-    model_path = "yolo26s.pt"
-    dataset = "datasets/emissoes_YOLO/dataset.yaml"
-    params = "YOLO_tools/train/params3.json"
-    training(model_path, params, dataset)
+    # # Treino 13 /app/runs/detect/train13
+    # metrics = [0.0, 0.0, 0.0, 1.0] # [P, R, MAP50, MAP5095]
+    # patch_metrics(metrics)
+    # # #    model = YOLO("runs/detect/train8/weights/last.pt")
+    # model_path = "runs/detect/train8/weights/last.pt" # # # modelo train8
+    # dataset = "datasets/emissoes_YOLO/dataset.yaml"
+    # params = "YOLO_tools/train/params3.json"
+    # training(model_path, params, dataset)
+
+    # # Treino 2
+    # # params = "YOLO_tools/train/params2.json"
+    # # training(model_path, params, dataset)
 
     # # Treino 4
     # model_path = "yolo26n.pt"
     # params = "YOLO_tools/train/params.json"
+
+    #----------------------------------------------------------------
+    #           Passando validação para ver os resultados           |
+    #----------------------------------------------------------------
+    from ultralytics import YOLO
+
+    # model = YOLO('runs/detect/train12/weights/best.pt')
+    # metrics = model.val(data='YOLO_tools/datasets/emissoes_YOLO/dataset.yaml')
+    # print(f"{metrics.results_dict}")
+
+    model = YOLO('runs/detect/train13/weights/best.pt')
+    metrics = model.val(data='YOLO_tools/datasets/emissoes_YOLO/dataset.yaml')
+    print(f"{metrics.results_dict}")
+
+    model = YOLO('runs/detect/train14/weights/best.pt')
+    metrics = model.val(data='YOLO_tools/datasets/emissoes_YOLO/dataset.yaml')
+    print(f"{metrics.results_dict}")
+
+    model = YOLO('runs/detect/train19/weights/best.pt')
+    metrics = model.val(data='YOLO_tools/datasets/emissoes_YOLO/dataset.yaml')
+    print(f"{metrics.results_dict}")
+
+    model = YOLO('runs/detect/train20/weights/best.pt')
+    metrics = model.val(data='YOLO_tools/datasets/emissoes_YOLO/dataset.yaml')
+    print(f"{metrics.results_dict}")
